@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -6,6 +7,9 @@ public class EnemyHealth : MonoBehaviour
     public int maxHealth = 50; // Maximum health of the enemy
     public int currentHealth;
     public hp_bar_ui hpBarUI;
+    private LootDropping lootDropping; // Reference to the LootDropping script
+    public bool endGameOnDeath = false; // Flag to end the game on death
+    private GameObject pausemenu;
 
     private void Awake()
     {
@@ -18,6 +22,7 @@ public class EnemyHealth : MonoBehaviour
                 hpBarUI = GetComponent<hp_bar_ui>();
             }
         }
+        lootDropping = GetComponentInParent<LootDropping>();
     }
 
     private void Start()
@@ -35,14 +40,26 @@ public class EnemyHealth : MonoBehaviour
 
         if (currentHealth <= 0)
         {
+
             Die();
         }
     }
+
+    public IEnumerator TakeDotDamage(int amount, int ticks, float interval = 1f)
+    {
+        for (int i = 0; i < ticks; i++)
+        {
+            yield return new WaitForSeconds(interval);
+            TakeDamage(amount);
+        }
+    }  
 
     // Method to handle enemy death
     private void Die()
     {
         //Debug.Log($"{gameObject.name} has died.");
+
+        if (endGameOnDeath) PauseMenu.MainMenu(); // If endGameOnDeath is true, call the MainMenu method from PauseMenu
 
         if (gameObject.CompareTag("spiky") || gameObject.CompareTag("bird")) // check if its spiky or brid enemy because they have own destroy logic
         {
